@@ -5,7 +5,7 @@ El contenedor principal monitoreara la web mientras que el contenedor con kali a
 ```
 ┌──────────--┐                ┌──────────────┐              ┌──────────────┐
 │ Attacker   │   HTTP GET     │ vulnerable-  │   Escribe    │    AIDE      │
-│            │───────────────▶│     web      │─────────────▶│   Monitor    │
+│            │──────────────▶│     web      │─────────────▶│   Monitor    │
 │172.20.0.30 │ ?file=/etc/    │ 172.20.0.10  │  access.log  │ 172.20.0.20  │
 └──────────--┘   passwd       └──────────────┘              └──────────────┘
                                      │                            │
@@ -42,8 +42,7 @@ File Integrity Monitoring (FIM) es una técnica de seguridad que:
 # Despliegue
 ![](images/init.png)
 
-Para el despliegue se creo un docker-compose. Este contiene las image
-nes requeridas, volumenes y el resto de la informacion.
+Para el despliegue se creo un docker-compose. Este contiene las imagenes requeridas, volumenes y el resto de la informacion.
 
 # Despliegue
 ``` bash
@@ -52,12 +51,11 @@ nes requeridas, volumenes y el resto de la informacion.
     mkdir -p aide-config
     mkdir -p aide-data
     mkdir -p shared-files
-    mkdir -p attacker-tools
 
     #Despliegue de el lab
     docker-compose up -d
 ```
-# Nota
+## Nota:
 Se recomienda asignar permisos especificos a el director de los logs para evitar problemas al escribir los logs (chmod 777 shared-files/)
 
 # Configuracion
@@ -104,7 +102,10 @@ Logrando leer archivos delicados de el sistema victima, usando la web vulnerable
 ![](images/test.png)
 
 Para monitorear los eventos solo hay que buscarlos en la carpeta shared-files, pudiendo ver la informacion recopilada por el programa aide.
-Nota: para ver las actualizaciones en tiempo real es recomendable usar estos comandos...
+
+## Nota:
+para ver las actualizaciones en tiempo real es recomendable usar estos comandos...
+
 ``` bash
     #basico
     tail -f shared-files/access.log
