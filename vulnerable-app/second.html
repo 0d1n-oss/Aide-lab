@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab AIDE - LFI Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .payloads {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .payloads h3 {
+            margin-top: 0;
+        }
+        .payload-btn {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .payload-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Lab AIDE - File Inclusion Tester</h1>
+        
+        <div class="warning">
+            <strong>⚠️ ADVERTENCIA:</strong> Aplicación vulnerable para propósitos educativos. NO usar en producción.
+        </div>
+
+        <form method="GET" action="">
+            <div class="form-group">
+                <label>Archivo a leer:</label>
+                <input type="text" name="file" placeholder="/etc/passwd" 
+                       value="<?php echo isset($_GET['file']) ? htmlspecialchars($_GET['file']) : ''; ?>">
+                <button type="submit">Explotar LFI</button>
+            </div>
+        </form>
+
+        <?php
+        if (isset($_GET['file'])) {
+            $file = $_GET['file'];
+            
+            echo "<h3>📄 Archivo solicitado: " . htmlspecialchars($file) . "</h3>";
+            
+            // VULNERABILIDAD INTENCIONAL - LFI
+            if (file_exists($file)) {
+                $content = file_get_contents($file);
+                
+                // Registrar en log (AIDE detectará esto)
+                $logFile = '/var/www/shared/access.log';
+                $logEntry = date('[Y-m-d H:i:s]') . " - LFI: $file | IP: " . $_SERVER['REMOTE_ADDR'] . "\n";
+                file_put_contents($logFile, $logEntry, FILE_APPEND);
+                
+                echo "<h3>✅ Contenido del archivo:</h3>";
+                echo "<pre>" . htmlspecialchars($content) . "</pre>";
+                
+            } else {
+                echo "<p style='color: red;'>❌ El archivo no existe o no se puede leer.</p>";
+            }
+        }
+        ?>
+
+        <div class="payloads">
+            <h3>💉 Payloads de Prueba:</h3>
+            <p><strong>Archivos del sistema:</strong></p>
+            <a href="?file=/etc/passwd" class="payload-btn">/etc/passwd</a>
+            <a href="?file=/etc/hosts" class="payload-btn">/etc/hosts</a>
+            <a href="?file=/etc/hostname" class="payload-btn">/etc/hostname</a>
+            <a href="?file=/proc/version" class="payload-btn">/proc/version</a>
+            
+            <p><strong>Path Traversal:</strong></p>
+            <a href="?file=../../../../etc/passwd" class="payload-btn">../../../../etc/passwd</a>
+            
+            <p><strong>Logs:</strong></p>
+            <a href="?file=/var/www/shared/access.log" class="payload-btn">access.log</a>
+        </div>
+
+        <div class="payloads" style="background: #f0f0f0; margin-top: 20px;">
+            <h3>🛡️ Verificar con AIDE:</h3>
+            <p><code>docker exec -it aide-monitor /usr/sbin/aide --check</code></p>
+            <p><code>cat shared-files/access.log</code></p>
+        </div>
+    </div>
+</body>
+</html>
