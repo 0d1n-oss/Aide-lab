@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  vulnerable-app:
+    image: php:7.2-apache
+    container_name: vulnerable-web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./vulnerable-app:/var/www/html
+      - ./shared-files:/var/www/shared
+    networks:
+      - aide-lab
+    restart: unless-stopped
+
+  aide-monitor:
+    image: iitgdocker/aide:latest
+    container_name: aide-monitor
+    volumes:
+      - ./vulnerable-app:/monitored:ro
+      - ./shared-files:/monitored-logs:rw
+      - ./aide-data:/var/lib/aide
+      - ./aide-config/aide.conf:/var/lib/aide/aide.conf:ro
+    networks:
+      - aide-lab
+    restart: unless-stopped
+    command: tail -f /dev/null
+
+  attacker:
+    image: kalilinux/kali-rolling:latest
+    container_name: attacker
+    depends_on:
+      - vulnerable-app
+      - aide-monitor
+    networks:
+      - aide-lab
+    stdin_open: true
+    tty: true
+    command: ["/bin/bash"]
+
+networks:
+  aide-lab:
+    driver: bridge
